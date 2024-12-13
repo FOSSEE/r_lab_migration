@@ -49,22 +49,37 @@ function lab_migration_labs_progress_all()
     $query->fields('lab_migration_proposal');
     $query->condition('approval_status', 1);
     $query->condition('solution_status', 2);
+    $query->orderBy('approval_date','DESC');
     $result = $query->execute();
     if ($result->rowCount() == 0)
       {
-        $page_content .= "We are in the process of updating the lab migration data. ";
+        $page_content .= "We are in the process of updating the lab migration data.";
       }
     else
       {
-        //$result = db_query($query);
-        $page_content .= "<ol reversed>";
+        $preference_rows = array();
+        $i = $result->rowCount();
         while ($row = $result->fetchObject())
           {
-            $page_content .= "<li>";
-            $page_content .= $row->university . " ({$row->lab_title})";
-            $page_content .= "</li>";
+            $approval_date = date("Y", $row->approval_date);
+            $preference_rows[] = array(
+                $i,
+                $row->university,
+                $row->lab_title,
+                $approval_date
+            );
+            $i--;
           }
-        $page_content .= "</ol>";
+        $preference_header = array(
+            'No',
+            'Institute',
+            'Lab',
+            'Year'
+        );
+        $page_content .= theme('table', array(
+            'header' => $preference_header,
+            'rows' => $preference_rows
+        ));
       }
     return $page_content;
   }
